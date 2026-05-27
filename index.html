@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- CSP: 외부 스크립트·스타일·연결 차단 (로컬 리소스만 허용) -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none';" />
   <title>할 일 목록</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -10,36 +13,108 @@
   <div class="container">
     <header>
       <h1>📝 할 일 목록</h1>
+      <!-- 검색 바 -->
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="할 일 또는 일기 검색..." autocomplete="off" />
+        <button id="search-clear" class="search-clear-btn" hidden aria-label="검색 초기화">✕</button>
+      </div>
     </header>
 
-    <!-- 입력 영역 -->
-    <div class="input-area">
-      <input
-        type="text"
-        id="todo-input"
-        placeholder="새 할 일을 입력하세요..."
-        autocomplete="off"
-        maxlength="100"
-      />
+    <!-- 뷰 전환 탭 (캘린더 기본) -->
+    <div class="view-tabs">
+      <button class="view-btn"        data-view="list">📋 리스트</button>
+      <button class="view-btn active" data-view="calendar">📅 캘린더</button>
+      <button class="view-btn"        data-view="diary">📔 일기</button>
+    </div>
+
+    <!-- 입력 영역 (리스트·캘린더 뷰에서만 표시) -->
+    <div class="input-area" id="input-area">
+      <input type="text" id="todo-input" placeholder="새 할 일을 입력하세요..." autocomplete="off" maxlength="100" />
+      <input type="date" id="due-date-input" title="마감일 선택 (선택사항)" />
+      <div class="priority-selector" id="priority-selector" title="우선순위 선택">
+        <button class="prio-btn prio-high"             data-priority="high"   aria-label="높음">높음</button>
+        <button class="prio-btn prio-medium is-active" data-priority="medium" aria-label="보통">보통</button>
+        <button class="prio-btn prio-low"              data-priority="low"    aria-label="낮음">낮음</button>
+      </div>
       <button id="add-btn" aria-label="추가">추가</button>
     </div>
 
-    <!-- 필터 탭 -->
-    <div class="filter-tabs" role="tablist" aria-label="할 일 필터">
-      <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">전체</button>
-      <button class="filter-btn" data-filter="active" role="tab" aria-selected="false">진행 중</button>
-      <button class="filter-btn" data-filter="completed" role="tab" aria-selected="false">완료</button>
+    <!-- ① 검색 결과 뷰 -->
+    <div id="view-search" class="view-panel" hidden>
+      <p id="search-result-label" class="search-result-label"></p>
+      <ul id="search-result-list" class="search-result-list"></ul>
+      <p id="search-empty" class="search-empty" hidden>검색 결과가 없습니다.</p>
     </div>
 
-    <!-- 할 일 목록 -->
-    <ul id="todo-list" aria-label="할 일 목록"></ul>
-
-    <!-- 빈 상태 메시지 -->
-    <div id="empty-msg" class="empty-msg" hidden>
-      <span>😊 할 일이 없습니다!</span>
+    <!-- ② 리스트 뷰 -->
+    <div id="view-list" class="view-panel" hidden>
+      <div id="progress-area" class="progress-area">
+        <div class="progress-header">
+          <span class="progress-label">전체 진행률</span>
+          <span id="progress-text" class="progress-text">0 / 0 완료</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-btn active" data-filter="all"       role="tab" aria-selected="true">전체</button>
+        <button class="filter-btn"        data-filter="active"    role="tab" aria-selected="false">진행 중</button>
+        <button class="filter-btn"        data-filter="completed" role="tab" aria-selected="false">완료</button>
+      </div>
+      <ul id="todo-list" aria-label="할 일 목록"></ul>
+      <div id="empty-msg" class="empty-msg" hidden><span>😊 할 일이 없습니다!</span></div>
     </div>
 
-    <!-- 푸터 -->
+    <!-- ③ 캘린더 뷰 -->
+    <div id="view-calendar" class="view-panel">
+      <!-- 캘린더 그리드 -->
+      <div id="cal-main">
+        <div class="cal-header">
+          <button id="cal-prev" aria-label="이전 달">&#8249;</button>
+          <span id="cal-title"></span>
+          <button id="cal-next" aria-label="다음 달">&#8250;</button>
+        </div>
+        <div class="cal-weekdays" aria-hidden="true">
+          <span>일</span><span>월</span><span>화</span>
+          <span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div id="cal-grid" class="cal-grid"></div>
+      </div>
+
+      <!-- 날짜 상세 패널 (날짜 클릭 시 캘린더를 교체) -->
+      <div id="day-detail" hidden>
+        <!-- JS로 동적 생성 -->
+      </div>
+    </div>
+
+    <!-- ④ 일기 뷰 -->
+    <div id="view-diary" class="view-panel" hidden>
+      <div class="diary-toolbar">
+        <span class="diary-toolbar-title">📔 나의 일기</span>
+        <button id="diary-new-btn" class="diary-new-btn">＋ 새 일기</button>
+      </div>
+      <!-- 새 일기 작성 폼 (숨김 상태로 시작) -->
+      <div id="diary-form" class="diary-form" hidden>
+        <div class="diary-form-row">
+          <input type="date" id="diary-date-input" class="diary-date-input" />
+          <input type="text" id="diary-title-input" class="diary-title-input" placeholder="제목 (선택)" maxlength="60" />
+        </div>
+        <textarea id="diary-content-input" class="diary-content-input" placeholder="오늘 하루를 기록해 보세요..." rows="5"></textarea>
+        <div class="diary-form-actions">
+          <button id="diary-save-btn" class="diary-save-btn">저장</button>
+          <button id="diary-cancel-btn" class="diary-cancel-btn">취소</button>
+        </div>
+      </div>
+      <!-- 일기 목록 -->
+      <ul id="diary-list" class="diary-list"></ul>
+      <div id="diary-empty" class="diary-empty" hidden>
+        <p>아직 작성한 일기가 없습니다.<br>오늘의 하루를 기록해 보세요! ✍️</p>
+      </div>
+    </div>
+
+    <!-- 푸터 (공통) -->
     <footer class="footer">
       <span id="counter">남은 할 일: 0개</span>
       <button id="clear-completed-btn" class="clear-btn">완료 항목 삭제</button>
