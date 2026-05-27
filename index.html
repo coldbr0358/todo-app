@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>할 일 목록</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📝 할 일 목록</h1>
+    </header>
+
+    <!-- 입력 영역 -->
+    <div class="input-area">
+      <input
+        type="text"
+        id="todo-input"
+        placeholder="새 할 일을 입력하세요..."
+        autocomplete="off"
+        maxlength="100"
+      />
+      <button id="add-btn" aria-label="추가">추가</button>
+    </div>
+
+    <!-- 필터 탭 -->
+    <div class="filter-tabs" role="tablist" aria-label="할 일 필터">
+      <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">전체</button>
+      <button class="filter-btn" data-filter="active" role="tab" aria-selected="false">진행 중</button>
+      <button class="filter-btn" data-filter="completed" role="tab" aria-selected="false">완료</button>
+    </div>
+
+    <!-- 할 일 목록 -->
+    <ul id="todo-list" aria-label="할 일 목록"></ul>
+
+    <!-- 빈 상태 메시지 -->
+    <div id="empty-msg" class="empty-msg" hidden>
+      <span>😊 할 일이 없습니다!</span>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+      <span id="counter">남은 할 일: 0개</span>
+      <button id="clear-completed-btn" class="clear-btn">완료 항목 삭제</button>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
