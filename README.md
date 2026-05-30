@@ -1,6 +1,8 @@
+
+
 # Todo App
 
-A simple Todo application built as part of Chosun University's extracurricular program, **"Claude-based AI Agent Development Special Lecture."**
+A simple Todo application built as part of Chosun University's extracurricular program, **"Claude-based AI Agent Development Special Lecture." , Day 1**
 
 ## Overview
 
